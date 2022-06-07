@@ -14,17 +14,17 @@ export default function TicBoard() {
         checkIfTie();
         checkWin();
         flipPlayer()  
-      }, [board]);
+    }, [board]);
 
-      useEffect(() => {
+    useEffect(() => {
         if (result.state != "none") {
           alert(`Game Finished! Winning Player: ${result.winner}`);
           restartGame();
         }
-      }, [result]);
+    }, [result]);
 
 
-      const flipPlayer = () => {
+    const flipPlayer = () => {
         setPlayer((previousPlayer) => {
             if (previousPlayer === "X") return "O";
             else {
@@ -42,8 +42,7 @@ export default function TicBoard() {
             }
             if(idx === square && val !== "") {
                 alert('cannot go there')
-                setPlayer = player
-                
+                flipPlayer()                              
             }
             return val;
         }));
@@ -51,10 +50,10 @@ export default function TicBoard() {
     const checkWin = () => {
         WinningPatterns.forEach((currPattern) => {
           const firstPlayer = board[currPattern[0]];
-          if (firstPlayer == "") return;
+          if (firstPlayer === "") return;
           let foundWinningPattern = true;
           currPattern.forEach((idx) => {
-            if (board[idx] != firstPlayer) {
+            if (board[idx] !== firstPlayer) {
               foundWinningPattern = false;
             }
           });
@@ -63,7 +62,7 @@ export default function TicBoard() {
             setResult({ winner: player, state: "Won" });
           }
         });
-      };
+    };
 
       const checkIfTie = () => {
         let filled = true;
@@ -76,13 +75,13 @@ export default function TicBoard() {
         if (filled) {
           setResult({ winner: "Tie", state: "Tie" });
         }
-      };
+    };
 
 
 
     const restartGame = () => {
         setBoard(["", "", "", "", "", "", "", "", ""]);
-        setPlayer("O");
+        setPlayer("X");
     };
     
 
