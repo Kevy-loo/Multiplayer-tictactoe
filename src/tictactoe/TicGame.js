@@ -17,7 +17,7 @@ export default function TicBoard() {
     }, [board]);
 
     useEffect(() => {
-        if (result.state != "none") {
+        if (result.state !== "none") {
           alert(`Game Finished! Winning Player: ${result.winner}`);
           restartGame();
         }
