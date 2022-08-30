@@ -1,110 +1,106 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import Square from './Square';
+import React from "react";
+import { useState, useEffect } from "react";
+import Square from "./Square";
 import "../styles/tictactoeStyles.css";
-import { WinningPatterns } from './WinningPatterns';
+import { WinningPatterns } from "./WinningPatterns";
+import { useChannelStateContext, useChatContext } from "stream-chat-react";
 
+export default function TicGame({ result, setResult }) {
+  const [board, setBoard] = useState(["", "", "", "", "", "", "", "", ""]);
+  const [player, setPlayer] = useState("X");
+  const [turn, setTurn] = useState("X");
 
-export default function TicBoard() {
-    const [board, setBoard] = useState(["", "", "", "", "", "", "", "", "" ]);
-    const [result, setResult] = useState({winner: "none", state: "none"})
-    const [player, setPlayer] = useState("X");
+  const { channel } = useChannelStateContext();
+  const { client } = useChatContext();
 
-    useEffect(() => {
-        checkIfTie();
-        checkWin();
-        flipPlayer()  
-    }, [board]);
+  useEffect(() => {
+    checkIfTie();
+    checkWin();
+  }, [board]);
 
-    useEffect(() => {
-        if (result.state !== "none") {
-          alert(`Game Finished! Winning Player: ${result.winner}`);
-          restartGame();
-        }
-    }, [result]);
+  const chooseSquare = async (square) => {
+    if (turn === player && board[square] === "") {
+      setTurn(player === "X" ? "O" : "X");
 
-
-    const flipPlayer = () => {
-        setPlayer((previousPlayer) => {
-            if (previousPlayer === "X") return "O";
-            else {
-              return "X";
-            }
-        });      
+      await channel.sendEvent({
+        type: "game-move",
+        data: { square, player },
+      });
+      setBoard(
+        board.map((val, idx) => {
+          if (idx === square && val === "") {
+            return player;
+          }
+          return val;
+        })
+      );
     }
+  };
 
-
-
-    const chooseSquare = (square) => {
-        setBoard(board.map((val, idx) => {
-            if(idx === square && val === "") {
-               return player; 
-            }
-            if(idx === square && val !== "") {
-                alert('cannot go there')
-                flipPlayer()                              
-            }
-            return val;
-        }));
-    };
-    const checkWin = () => {
-        WinningPatterns.forEach((currPattern) => {
-          const firstPlayer = board[currPattern[0]];
-          if (firstPlayer === "") return;
-          let foundWinningPattern = true;
-          currPattern.forEach((idx) => {
-            if (board[idx] !== firstPlayer) {
-              foundWinningPattern = false;
-            }
-          });
-    
-          if (foundWinningPattern) {
-            setResult({ winner: player, state: "Won" });
-          }
-        });
-    };
-
-      const checkIfTie = () => {
-        let filled = true;
-        board.forEach((square) => {
-          if (square === "") {
-            filled = false;
-          }
-        });
-    
-        if (filled) {
-          setResult({ winner: "Tie", state: "Tie" });
+  const checkWin = () => {
+    WinningPatterns.forEach((currPattern) => {
+      const firstPlayer = board[currPattern[0]];
+      if (firstPlayer == "") return;
+      let foundWinningPattern = true;
+      currPattern.forEach((idx) => {
+        if (board[idx] != firstPlayer) {
+          foundWinningPattern = false;
         }
-    };
+      });
 
+      if (foundWinningPattern) {
+        setResult({ winner: board[currPattern[0]], state: "won" });
+      }
+    });
+  };
 
+  const checkIfTie = () => {
+    let filled = true;
+    board.forEach((square) => {
+      if (square == "") {
+        filled = false;
+      }
+    });
 
-    const restartGame = () => {
-        setBoard(["", "", "", "", "", "", "", "", ""]);
-        setPlayer("X");
-    };
-    
+    if (filled) {
+      setResult({ winner: "none", state: "tie" });
+    }
+  };
 
+  channel.on((event) => {
+    if (event.type == "game-move" && event.user.id !== client.userID) {
+      const currentPlayer = event.data.player === "X" ? "O" : "X";
+      setPlayer(currentPlayer);
+      setTurn(currentPlayer);
+      setBoard(
+        board.map((val, idx) => {
+          if (idx === event.data.square && val === "") {
+            return event.data.player;
+          }
+          return val;
+        })
+      );
+    }
+  });
 
-
-    return (
-        <div className='board'>
-            <div className='row'>
-                <Square val={board[0]} chooseSquare={() => {chooseSquare(0)}}/>
-                <Square val={board[1]} chooseSquare={() => {chooseSquare(1)}}/>
-                <Square val={board[2]} chooseSquare={() => {chooseSquare(2)}}/>
-            </div>
-            <div className='row'>
-                <Square val={board[3]} chooseSquare={() => {chooseSquare(3)}}/>
-                <Square val={board[4]} chooseSquare={() => {chooseSquare(4)}}/>
-                <Square val={board[5]} chooseSquare={() => {chooseSquare(5)}}/>
-            </div>
-            <div className='row'>
-                <Square val={board[6]} chooseSquare={() => {chooseSquare(6)}}/>
-                <Square val={board[7]} chooseSquare={() => {chooseSquare(7)}}/>
-                <Square val={board[8]} chooseSquare={() => {chooseSquare(8)}}/>
-            </div>
-            
+  return (
+      <div className='board'>
+        <div className='row'>
+            <Square val={board[0]} chooseSquare={() => {chooseSquare(0)}}/>
+            <Square val={board[1]} chooseSquare={() => {chooseSquare(1)}}/>
+            <Square val={board[2]} chooseSquare={() => {chooseSquare(2)}}/>
         </div>
-    )
+        <div className='row'>
+            <Square val={board[3]} chooseSquare={() => {chooseSquare(3)}}/>
+            <Square val={board[4]} chooseSquare={() => {chooseSquare(4)}}/>
+            <Square val={board[5]} chooseSquare={() => {chooseSquare(5)}}/>
+        </div>
+        <div className='row'>
+            <Square val={board[6]} chooseSquare={() => {chooseSquare(6)}}/>
+            <Square val={board[7]} chooseSquare={() => {chooseSquare(7)}}/>
+            <Square val={board[8]} chooseSquare={() => {chooseSquare(8)}}/>
+        </div>
+        
+    </div>
+  );
 }
