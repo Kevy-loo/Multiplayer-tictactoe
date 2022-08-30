@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Routes, Route, Link } from "react-router-dom";
 import './App.css';
 import TicGame from './tictactoe/TicGame';
@@ -10,10 +10,25 @@ import Cookies from 'universal-cookie';
 
 
 
+
 function App() {
   const cookies = new Cookies();
   const token = cookies.get('token')
   const client = StreamChat.getInstance(process.env.REACT_APP_API_KEY)
+  const [isAuth, setIsAuth] = useState(false)
+
+  const logOut = () => {
+    cookies.remove('token');
+    cookies.remove('userId');
+    cookies.remove('firstName');
+    cookies.remove('lastName');
+    cookies.remove('hashedPassword');
+    cookies.remove('channelName');
+    cookies.remove('username');
+    client.disconnectUser();
+    setIsAuth(false)
+
+  }
 
   if (token) {
       client.connectUser({
@@ -25,6 +40,7 @@ function App() {
     }, token
     ).then((user) => {
       console.log(user)
+      setIsAuth(true)
     })
   } 
 
@@ -36,8 +52,12 @@ function App() {
         <Route path='/login' element={<Login/>}/>
       
       </Routes> */}
-      <SignUp/>
-      <Login/>
+      {isAuth ? (<button onClick={logOut}>Logout</button>) :(
+        <>
+      <SignUp setIsAuth={setIsAuth}/>
+      <Login setIsAuth={setIsAuth}/>
+      </>
+      )}
       <TicGame/>
       
       {/* <Routes>
