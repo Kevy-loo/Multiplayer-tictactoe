@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import { Routes, Route, Link } from "react-router-dom";
 import './App.css';
 import TicGame from './tictactoe/TicGame';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import { StreamChat } from 'stream-chat';
 import Cookies from 'universal-cookie';
+import { Chat } from 'stream-chat-react';
 
 
 
@@ -52,13 +52,18 @@ function App() {
         <Route path='/login' element={<Login/>}/>
       
       </Routes> */}
-      {isAuth ? (<button onClick={logOut}>Logout</button>) :(
+      {isAuth ? (
+        <Chat client={client}>
+          <TicGame/>
+          <button onClick={logOut}>Logout</button>
+        </Chat>
+        ) : (
         <>
       <SignUp setIsAuth={setIsAuth}/>
       <Login setIsAuth={setIsAuth}/>
       </>
       )}
-      <TicGame/>
+      
       
       {/* <Routes>
         <Route path='/tictactoe' element={<TicGame/>}/>
