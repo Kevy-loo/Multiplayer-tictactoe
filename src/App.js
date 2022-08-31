@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "./App.css";
-import TicGame from "./tictactoe/TicGame";
 import Login from "./components/Login";
 import SignUp from "./components/SignUp";
 import { StreamChat } from "stream-chat";
@@ -39,17 +38,12 @@ function App() {
         token
       )
       .then((user) => {
-        console.log(user);
         setIsAuth(true);
       });
   }
 
   return (
     <div className="App">
-      {/* <Routes>
-        <Route path='/login' element={<Login/>}/>
-      
-      </Routes> */}
       {isAuth ? (
         <Chat client={client}>
           <JoinGame />
@@ -61,10 +55,6 @@ function App() {
           <Login setIsAuth={setIsAuth} />
         </>
       )}
-
-      {/* <Routes>
-        <Route path='/tictactoe' element={<TicGame/>}/>
-      </Routes> */}
     </div>
   );
 }
